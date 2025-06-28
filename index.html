@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars - Guia Galáctico</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <!-- Vue.js and Axios from CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        :root {
+            --starwars-yellow: #FFE81F;
+            --saber-blue: #32b0ff;
+            --saber-red: #ff3232;
+            --dark-space: #000;
+            --light-text: #E2E8F0;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --card-border: rgba(51, 65, 85, 0.5);
+            --card-hover-shadow: 0 0 20px 7px var(--saber-blue);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark-space);
+            color: var(--light-text);
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            perspective: 800px;
+            scroll-behavior: smooth;
+        }
+        
+        /* Advanced Starfield Animation */
+        @keyframes move-stars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+        .starfield {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            display: block; z-index: -2;
+        }
+        .starfield div {
+            position: absolute;
+            top: 200px;
+            width: 1px; height: 1px;
+            background: transparent;
+            box-shadow: 1919px 1279px #FFF, 888px 125px #FFF, 1290px 486px #FFF, 126px 1419px #FFF, 1001px 119px #FFF, 1038px 1017px #FFF, 1503px 1475px #FFF, 621px 1153px #FFF, 532px 1423px #FFF, 792px 1445px #FFF, 192px 1599px #FFF, 1373px 1858px #FFF, 34px 1735px #FFF, 1563px 184px #FFF, 983px 442px #FFF, 147px 1177px #FFF, 1239px 343px #FFF, 1070px 1886px #FFF, 1632px 1438px #FFF, 321px 1544px #FFF, 1048px 1908px #FFF, 110px 1172px #FFF, 153px 941px #FFF, 878px 1630px #FFF, 1098px 1690px #FFF, 1545px 329px #FFF, 638px 905px #FFF, 483px 1125px #FFF, 1318px 1410px #FFF, 1872px 1324px #FFF, 54px 1916px #FFF, 332px 1100px #FFF, 1252px 123px #FFF, 1546px 1103px #FFF, 1799px 1294px #FFF, 1433px 1139px #FFF, 613px 421px #FFF, 273px 1222px #FFF, 1789px 502px #FFF, 1432px 1430px #FFF, 1693px 807px #FFF, 1056px 1740px #FFF, 1184px 30px #FFF, 1695px 1738px #FFF, 1693px 1002px #FFF, 1008px 304px #FFF, 1423px 133px #FFF, 499px 832px #FFF, 1531px 610px #FFF, 1022px 57px #FFF, 1431px 1243px #FFF, 85px 122px #FFF, 1713px 1083px #FFF, 1185px 1400px #FFF, 1436px 1561px #FFF, 1146px 1604px #FFF, 1335px 177px #FFF, 1313px 1536px #FFF, 1349px 938px #FFF, 175px 843px #FFF, 477px 1868px #FFF, 149px 1289px #FFF, 1135px 1236px #FFF, 1836px 1999px #FFF, 351px 1108px #FFF, 1507px 1113px #FFF, 735px 1603px #FFF, 1614px 1528px #FFF, 411px 1834px #FFF, 1680px 107px #FFF, 1539px 379px #FFF, 1718px 1898px #FFF, 1005px 1874px #FFF, 1354px 1030px #FFF, 1198px 1705px #FFF, 785px 196px #FFF, 1823px 1024px #FFF, 1964px 352px #FFF, 891px 648px #FFF, 1005px 1606px #FFF, 1391px 1022px #FFF, 123px 1205px #FFF, 1142px 796px #FFF, 1200px 1232px #FFF, 706px 1317px #FFF, 709px 157px #FFF, 1968px 173px #FFF, 1043px 439px #FFF, 1916px 1150px #FFF, 1017px 873px #FFF, 1154px 1731px #FFF, 1845px 1928px #FFF, 399px 1433px #FFF, 853px 410px #FFF, 1112px 1419px #FFF, 1656px 1837px #FFF, 911px 477px #FFF;
+            animation: move-stars 200s linear infinite;
+        }
+        .starfield div:nth-child(2) {
+            box-shadow: 170px 160px #FFF, 1899px 1475px #FFF, 1899px 695px #FFF, 24px 899px #FFF, 1194px 1194px #FFF, 901px 373px #FFF, 881px 1383px #FFF, 1453px 134px #FFF, 184px 446px #FFF, 1630px 45px #FFF, 1494px 1008px #FFF, 1614px 490px #FFF, 1151px 1252px #FFF, 273px 255px #FFF, 245px 1969px #FFF, 1699px 1242px #FFF, 1451px 1782px #FFF, 1827px 1332px #FFF, 715px 1930px #FFF, 1414px 1039px #FFF, 712px 1361px #FFF, 1599px 1445px #FFF, 686px 1564px #FFF, 545px 1312px #FFF, 134px 1349px #FFF, 1269px 1673px #FFF, 831px 1155px #FFF, 701px 1133px #FFF, 1398px 1422px #FFF, 147px 1109px #FFF, 831px 1735px #FFF, 866px 1490px #FFF, 1515px 1585px #FFF, 1073px 1285px #FFF, 1025px 561px #FFF, 1336px 914px #FFF, 1933px 1815px #FFF, 1032px 1036px #FFF, 1494px 1317px #FFF, 1118px 151px #FFF, 1667px 307px #FFF, 1189px 725px #FFF, 1530px 1018px #FFF, 1380px 1686px #FFF, 629px 1642px #FFF, 186px 871px #FFF, 1121px 406px #FFF, 1639px 650px #FFF, 1276px 1383px #FFF, 1601px 803px #FFF, 135px 1531px #FFF, 1835px 1827px #FFF, 1888px 1792px #FFF, 1849px 1941px #FFF, 729px 1851px #FFF, 1785px 1776px #FFF, 1551px 1993px #FFF, 1870px 1338px #FFF, 843px 1757px #FFF, 8px 1239px #FFF, 922px 1904px #FFF, 70px 1687px #FFF, 91px 1222px #FFF, 1263px 1618px #FFF, 1230px 1016px #FFF, 1097px 1923px #FFF, 112px 150px #FFF, 1021px 1828px #FFF, 1658px 1146px #FFF, 129px 1832px #FFF, 1848px 1604px #FFF, 1819px 1590px #FFF, 1361px 1755px #FFF, 1204px 93px #FFF, 493px 835px #FFF, 1801px 37px #FFF, 743px 1106px #FFF, 1229px 1293px #FFF, 1590px 1606px #FFF, 1740px 1165px #FFF, 1141px 1283px #FFF, 1365px 748px #FFF, 1344px 1268px #FFF, 1149px 486px #FFF, 1533px 93px #FFF, 483px 1098px #FFF, 1119px 906px #FFF;
+            animation: move-stars 150s linear infinite;
+        }
+        .starfield div:nth-child(3) {
+            transform: scale(1.5);
+            box-shadow: 178px 590px #FFF, 865px 1582px #FFF, 401px 1730px #FFF, 1059px 1673px #FFF, 127px 1133px #FFF, 1404px 128px #FFF, 1222px 1033px #FFF, 835px 1017px #FFF, 240px 109px #FFF, 989px 1037px #FFF, 1202px 1475px #FFF, 747px 1398px #FFF, 1199px 1699px #FFF, 1493px 134px #FFF, 626px 1326px #FFF, 1111px 408px #FFF, 545px 1228px #FFF, 1000px 1711px #FFF, 32px 1735px #FFF, 1891px 632px #FFF, 1203px 430px #FFF, 1712px 512px #FFF, 1159px 1952px #FFF, 259px 105px #FFF, 1099px 1319px #FFF, 1993px 914px #FFF, 1251px 384px #FFF, 1429px 1307px #FFF, 749px 376px #FFF, 891px 233px #FFF, 182px 799px #FFF, 345px 393px #FFF, 1117px 173px #FFF, 1585px 1867px #FFF, 1445px 1381px #FFF, 1083px 566px #FFF, 1287px 926px #FFF, 1332px 1303px #FFF, 1156px 1150px #FFF, 1220px 1803px #FFF, 1558px 918px #FFF, 1310px 1762px #FFF, 915px 1324px #FFF, 281px 1759px #FFF, 709px 1853px #FFF, 150px 1007px #FFF, 1834px 1974px #FFF, 1450px 1319px #FFF, 1341px 1779px #FFF, 650px 109px #FFF, 1845px 107px #FFF, 95px 1032px #FFF, 651px 66px #FFF, 1280px 1557px #FFF, 1629px 1739px #FFF, 1236px 166px #FFF, 1990px 1673px #FFF, 1321px 1449px #FFF, 1056px 1989px #FFF, 1984px 1184px #FFF, 1133px 164px #FFF, 1045px 1340px #FFF, 1297px 122px #FFF, 966px 1217px #FFF, 37px 74px #FFF, 1335px 33px #FFF, 1907px 1655px #FFF, 1740px 1676px #FFF, 484px 1459px #FFF, 1107px 1767px #FFF, 1153px 40px #FFF, 1417px 707px #FFF, 1304px 1904px #FFF, 313px 1240px #FFF, 1599px 112px #FFF, 1698px 1047px #FFF, 1917px 1656px #FFF, 1819px 1093px #FFF, 1069px 239px #FFF, 1301px 873px #FFF, 434px 1530px #FFF, 482px 285px #FFF, 153px 1509px #FFF, 1851px 1132px #FFF;
+            animation: move-stars 100s linear infinite;
+        }
+
+        .death-star {
+            position: fixed; top: 5%; right: 5%; width: 120px; height: 120px;
+            background: #222; border-radius: 50%;
+            box-shadow: inset -15px 15px 30px rgba(0,0,0,0.9), 0 0 20px rgba(255,255,255,0.05);
+            z-index: -1; opacity: 0.7;
+        }
+        .death-star::before {
+            content: ''; position: absolute; top: 15px; right: 35px;
+            width: 30px; height: 30px; background: #111; border-radius: 50%;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        h1, h2, h3 { font-family: 'Exo 2', sans-serif; color: var(--starwars-yellow); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); letter-spacing: 2px; }
+        
+        nav {
+            display: flex; justify-content: center; padding: 1rem 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--starwars-yellow);
+        }
+        nav button {
+            font-family: 'Exo 2', sans-serif; background: none; border: 1px solid transparent;
+            color: var(--light-text); margin: 0 1rem; padding: 0.5rem 1rem;
+            font-size: 1.1rem; cursor: pointer; transition: color 0.3s, border-color 0.3s, text-shadow 0.3s;
+        }
+        nav button:hover, nav button.active {
+            color: var(--starwars-yellow); border-bottom: 1px solid var(--starwars-yellow);
+            text-shadow: 0 0 10px var(--starwars-yellow);
+        }
+
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        
+        .card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 12px; overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(10px); display: flex; flex-direction: column;
+            cursor: pointer;
+        }
+        .card:hover { transform: translateY(-8px) scale(1.03); box-shadow: var(--card-hover-shadow); border-color: var(--saber-blue); }
+        .card-image { width: 100%; height: 180px; object-fit: cover; background-color: #000; border-bottom: 1px solid var(--card-border); }
+        .card-content { padding: 1rem; text-align: center; }
+        .card-content h3 { margin-top: 0; color: var(--starwars-yellow); font-size: 1.2rem; }
+        
+        .loader, .error { text-align: center; font-size: 1.5rem; margin-top: 5rem; font-family: 'Exo 2', sans-serif; }
+        .error { color: var(--saber-red); }
+
+        #home { height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .crawl-container {
+            width: 80%; max-width: 800px; height: 80vh; font-size: 2vw;
+            line-height: 1.5em; transform: perspective(300px) rotateX(25deg);
+            text-align: justify; overflow: hidden; position: relative;
+        }
+        .crawl-content { position: absolute; top: 100%; animation: crawl 30s linear infinite; }
+        .crawl-content h2, .crawl-content h3 { text-align: center; }
+        @keyframes crawl { 0% { top: 100%; } 100% { top: -200%; } }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg); border: 1px solid var(--saber-blue);
+            border-radius: 12px; padding: 2rem;
+            width: 90%; max-width: 700px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: var(--card-hover-shadow);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .modal-header h2 { margin: 0; color: var(--starwars-yellow); }
+        .close-button {
+            background: none; border: none; color: var(--light-text);
+            font-size: 2.5rem; cursor: pointer; line-height: 1; transition: color 0.3s;
+        }
+        .close-button:hover { color: var(--saber-red); }
+        .modal-body { display: flex; gap: 1.5rem; }
+        .modal-image { width: 220px; height: 330px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+        .modal-details { flex-grow: 1; }
+        .modal-details p { margin: 0.8rem 0; line-height: 1.7; }
+        .modal-details p strong { color: var(--saber-blue); text-transform: capitalize;}
+        .opening-crawl {
+            max-height: 200px; overflow-y: auto;
+            border: 1px solid var(--card-border);
+            padding: 1rem; border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+        }
+
+        .v-enter-active, .v-leave-active { transition: opacity 0.4s ease; }
+        .v-enter-from, .v-leave-to { opacity: 0; }
+
+        @media (max-width: 768px) {
+            nav { flex-wrap: wrap; justify-content: space-around; }
+            nav button { margin: 0.5rem; }
+            .crawl-container { font-size: 3.5vw; }
+            .modal-body { flex-direction: column; align-items: center; }
+            .modal-image { width: 100%; max-width: 250px; height: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="starfield">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="death-star"></div>
+
+        <nav>
+            <button @click="currentView = 'home'" :class="{ active: currentView === 'home' }">Início</button>
+            <button @click="currentView = 'films'" :class="{ active: currentView === 'films' }">Filmes</button>
+            <button @click="currentView = 'people'" :class="{ active: currentView === 'people' }">Personagens</button>
+            <button @click="currentView = 'planets'" :class="{ active: currentView === 'planets' }">Planetas</button>
+            <button @click="currentView = 'species'" :class="{ active: currentView === 'species' }">Espécies</button>
+        </nav>
+
+        <main class="container">
+            <component :is="currentView" @open-modal="openModal"></component>
+        </main>
+        
+        <teleport to="body">
+            <transition>
+                <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
+                    <div class="modal-content" @click.stop>
+                       <component :is="modalView" :item="selectedItem" @close="closeModal"></component>
+                    </div>
+                </div>
+            </transition>
+        </teleport>
+    </div>
+
+    <script type="module">
+        const { createApp, ref, computed, onMounted } = Vue;
+        
+        const imageDatabase = {
+            'A New Hope': 'https://upload.wikimedia.org/wikipedia/pt/8/87/Star_Wars._Episódio_IV_-_Uma_Nova_Esperança.jpg',
+            'The Empire Strikes Back': 'https://upload.wikimedia.org/wikipedia/pt/5/5c/The_Empire_Strikes_Back.jpg',
+            'Return of the Jedi': 'https://upload.wikimedia.org/wikipedia/pt/b/b2/ReturnOfTheJediPoster1983.jpg',
+            'The Phantom Menace': 'https://upload.wikimedia.org/wikipedia/pt/a/a2/Star_Wars_Episode_I_The_Phantom_Menace_-_Pôster.jpg',
+            'Attack of the Clones': 'https://upload.wikimedia.org/wikipedia/pt/6/6f/Star_Wars_Episode_II_Attack_of_the_Clones_-_Pôster.jpg',
+            'Revenge of the Sith': 'https://upload.wikimedia.org/wikipedia/pt/5/58/Star_Wars_Episódio_III_A_Vingança_dos_Sith.jpg',
+            'The Force Awakens': 'https://upload.wikimedia.org/wikipedia/pt/a/ae/Star_Wars_-_O_Despertar_da_Força.jpg',
+            'The Last Jedi': 'https://upload.wikimedia.org/wikipedia/pt/7/7a/Star_Wars_The_Last_Jedi.jpg',
+            'The Rise of Skywalker': 'https://upload.wikimedia.org/wikipedia/pt/a/af/Star_Wars_The_Rise_of_Skywalker.jpg',
+            'Luke Skywalker': 'https://upload.wikimedia.org/wikipedia/en/9/9b/Luke_Skywalker.png',
+            'Darth Vader': 'https://upload.wikimedia.org/wikipedia/en/7/76/Darth_Vader.jpg',
+            'Leia Organa': 'https://upload.wikimedia.org/wikipedia/en/1/1b/Princess_Leia%27s_characteristic_hairstyle.jpg',
+            'Han Solo': 'https://upload.wikimedia.org/wikipedia/en/b/be/Han_Solo_depicted_in_promotional_image_for_Star_Wars_%281977%29.jpg',
+            'C-3PO': 'https://upload.wikimedia.org/wikipedia/en/5/5c/C-3PO_droid.png',
+            'R2-D2': 'https://upload.wikimedia.org/wikipedia/en/3/39/R2-D2_Droid.png',
+            'Obi-Wan Kenobi': 'https://upload.wikimedia.org/wikipedia/en/c/c5/Obiwan1.jpg',
+            'Chewbacca': 'https://upload.wikimedia.org/wikipedia/en/6/6d/Chewbacca-2-.jpg',
+            'Yoda': 'https://upload.wikimedia.org/wikipedia/en/9/9b/Yoda_Empire_Strikes_Back.png',
+            'Palpatine': 'https://upload.wikimedia.org/wikipedia/en/d/d8/Emperor_Palpatine.png',
+            'Boba Fett': 'https://upload.wikimedia.org/wikipedia/en/3/3e/Boba_Fett_in_The_Empire_Strikes_Back.png',
+            'Tatooine': 'https://static.wikia.nocookie.net/starwars/images/b/b0/Tatooine_TPM.png/revision/latest?cb=20131019121937',
+            'Alderaan': 'https://static.wikia.nocookie.net/starwars/images/4/4a/Alderaan.jpg/revision/latest?cb=20061107223447',
+            'Yavin IV': 'https://static.wikia.nocookie.net/starwars/images/d/d4/Yavin-4-SWCT.png/revision/latest?cb=20170712005330',
+            'Hoth': 'https://static.wikia.nocookie.net/starwars/images/1/1d/Hoth_SWCT.png/revision/latest?cb=20160630022625',
+            'Dagobah': 'https://static.wikia.nocookie.net/starwars/images/4/48/Dagobah_ep3.jpg/revision/latest?cb=20100122163146',
+            'Bespin': 'https://static.wikia.nocookie.net/starwars/images/1/11/Bespin-SWCT.png/revision/latest?cb=20170709044234',
+            'Endor': 'https://static.wikia.nocookie.net/starwars/images/1/1d/Endor_BF2.png/revision/latest?cb=20171014233715',
+            'Naboo': 'https://static.wikia.nocookie.net/starwars/images/f/f0/Naboo_FFG.png/revision/latest?cb=2017022 Naboo_FFG.png',
+            'Coruscant': 'https://static.wikia.nocookie.net/starwars/images/1/16/Coruscant-EotE.jpg/revision/latest?cb=2013092102 Coruscant-EotE.jpg',
+            'Kamino': 'https://static.wikia.nocookie.net/starwars/images/5/52/Kamino-DB.png/revision/latest?cb=20150923052824',
+            'Human': 'https://static.wikia.nocookie.net/starwars/images/c/c8/Human-SWE.png/revision/latest?cb=20120117170111',
+            'Droid': 'https://static.wikia.nocookie.net/starwars/images/f/fb/Battle_Droid_Squad_SWE.png/revision/latest?cb=20160910005741',
+            'Wookiee': 'https://static.wikia.nocookie.net/starwars/images/3/33/Wookiees_SWE.png/revision/latest?cb=20120117170104',
+            'Rodian': 'https://static.wikia.nocookie.net/starwars/images/5/53/Rodian_bounty_hunter.png/revision/latest?cb=20111115043633',
+            'Hutt': 'https://static.wikia.nocookie.net/starwars/images/4/43/JabbaTheHutt-ROTJ.png/revision/latest?cb=20210222020224',
+        };
+
+        const getImageUrl = (text) => {
+            const key = Object.keys(imageDatabase).find(k => text.includes(k));
+            return imageDatabase[key] || `https://placehold.co/400x225/000000/FFE81F?text=${encodeURIComponent(text.replace(/ /g, '+'))}`;
+        };
+
+        const useSwapi = (endpoint) => {
+            const data = ref(null);
+            const loading = ref(true);
+            const error = ref(null);
+            const fetchData = async () => {
+                loading.value = true;
+                error.value = null;
+                try {
+                    const response = await axios.get(`https://swapi.py4e.com/api/${endpoint}/`);
+                    data.value = response.data.results;
+                } catch (err) {
+                    error.value = `Não foi possível carregar os dados.`;
+                } finally {
+                    loading.value = false;
+                }
+            };
+            onMounted(fetchData);
+            return { data, loading, error };
+        };
+        
+        const Home = { template: `<section id="home"><div class="crawl-container"><div class="crawl-content"><h2>EPISÓDIO IV.1</h2><h3>UMA NOVA APLICAÇÃO</h3><p>É um período de aprendizado. Naves de desenvolvedores, partindo de uma base oculta, conquistaram sua primeira vitória contra o malvado Império do Código Legado.</p><p>Durante a batalha, espiões conseguiram roubar os planos secretos da arma final do Império, a API de STAR WARS, uma interface com poder suficiente para carregar um sistema galáctico inteiro.</p><p>Perseguido pelos sinistros agentes do Império, um jovem Dev corre para sua casa a bordo de sua cadeira, guardando os dados roubados que podem salvar seu povo e restaurar a liberdade para a galáxia...</p></div></div></section>` };
+
+        const createCardListComponent = (name, endpoint, loaderMsg) => ({
+            template: `
+                <section :id="endpoint">
+                    <h2>{{ name }}</h2>
+                    <div v-if="loading" class="loader">{{ loaderMsg }}</div>
+                    <div v-else-if="error" class="error">{{ error }}</div>
+                    <div v-else class="data-grid">
+                        <div v-for="item in processedData" :key="item.name || item.title" class="card" @click="$emit('openModal', { item, type: endpoint })">
+                            <img :src="getImageUrl(item.name || item.title)" class="card-image" :alt="'Imagem de ' + (item.name || item.title)" @error="$event.target.src='https://placehold.co/400x225/000000/FFE81F?text=Not+Found'">
+                            <div class="card-content">
+                                <h3>{{ item.name || item.title }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `,
+            emits: ['openModal'],
+            setup() {
+                const { data, loading, error } = useSwapi(endpoint);
+                const processedData = computed(() => {
+                    if (!data.value) return [];
+                     if (endpoint === 'films') {
+                        const apiFilms = [...data.value];
+                        const extraFilms = [
+                            { title: 'The Force Awakens', episode_id: 7, director: 'J. J. Abrams', release_date: '2015-12-18', opening_crawl: 'Luke Skywalker has vanished. In his absence, the sinister FIRST ORDER has risen from the ashes of the Empire and will not rest until Skywalker, the last Jedi, has been destroyed.'},
+                            { title: 'The Last Jedi', episode_id: 8, director: 'Rian Johnson', release_date: '2017-12-15', opening_crawl: 'The FIRST ORDER reigns. Having decimated the peaceful Republic, Supreme Leader Snoke now deploys his merciless legions to seize military control of the galaxy.' },
+                            { title: 'The Rise of Skywalker', episode_id: 9, director: 'J. J. Abrams', release_date: '2019-12-20', opening_crawl: 'The dead speak! The galaxy has heard a mysterious broadcast, a threat of REVENGE in the sinister voice of the late EMPEROR PALPATINE.' }
+                        ];
+                        // Filter out The Force Awakens from API if it exists to avoid duplicates
+                        const filteredApiFilms = apiFilms.filter(film => film.episode_id !== 7);
+                        return [...filteredApiFilms, ...extraFilms].sort((a, b) => a.episode_id - b.episode_id);
+                    }
+                    return data.value;
+                });
+                return { name, endpoint, loaderMsg, processedData, loading, error, getImageUrl };
+            }
+        });
+
+        const ModalComponent = {
+            template: `
+                <div class="modal-header">
+                    <h2>{{ item.item.name || item.item.title }}</h2>
+                    <button class="close-button" @click="$emit('close')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <img :src="getImageUrl(item.item.name || item.item.title)" class="modal-image" :alt="'Imagem de ' + (item.item.name || item.item.title)"  @error="$event.target.src='https://placehold.co/400x600/000000/FFE81F?text=Not+Found'">
+                    <div class="modal-details">
+                        <div v-if="item.type === 'films'">
+                            <p><strong>Episódio:</strong> {{ item.item.episode_id }}</p>
+                            <p><strong>Diretor:</strong> {{ item.item.director }}</p>
+                            <p><strong>Lançamento:</strong> {{ new Date(item.item.release_date).toLocaleDateString('pt-BR') }}</p>
+                            <p><strong>Abertura:</strong></p>
+                            <div class="opening-crawl">{{ item.item.opening_crawl }}</div>
+                        </div>
+                        <div v-if="item.type === 'people'">
+                            <p><strong>Altura:</strong> {{ item.item.height }} cm</p>
+                            <p><strong>Massa:</strong> {{ item.item.mass }} kg</p>
+                            <p><strong>Cor do cabelo:</strong> {{ item.item.hair_color }}</p>
+                            <p><strong>Cor da pele:</strong> {{ item.item.skin_color }}</p>
+                            <p><strong>Cor dos olhos:</strong> {{ item.item.eye_color }}</p>
+                            <p><strong>Nascimento:</strong> {{ item.item.birth_year }}</p>
+                        </div>
+                        <div v-if="item.type === 'planets'">
+                            <p><strong>Clima:</strong> {{ item.item.climate }}</p>
+                            <p><strong>Terreno:</strong> {{ item.item.terrain }}</p>
+                            <p><strong>População:</strong> {{ isNaN(parseInt(item.item.population)) ? 'Desconhecida' : Number(item.item.population).toLocaleString('pt-BR') }}</p>
+                            <p><strong>Diâmetro:</strong> {{ Number(item.item.diameter).toLocaleString('pt-BR') }} km</p>
+                            <p><strong>Gravidade:</strong> {{ item.item.gravity }}</p>
+                            <p><strong>Período Orbital:</strong> {{ item.item.orbital_period }} dias</p>
+                        </div>
+                        <div v-if="item.type === 'species'">
+                            <p><strong>Classificação:</strong> {{ item.item.classification }}</p>
+                            <p><strong>Designação:</strong> {{ item.item.designation }}</p>
+                            <p><strong>Altura Média:</strong> {{ item.item.average_height }} cm</p>
+                             <p><strong>Cores de Pele:</strong> {{ item.item.skin_colors }}</p>
+                            <p><strong>Idioma:</strong> {{ item.item.language }}</p>
+                            <p><strong>Tempo de vida:</strong> {{ item.item.average_lifespan }} anos</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            props: ['item'],
+            emits: ['close'],
+            setup() { return { getImageUrl }; }
+        }
+
+        const app = createApp({
+            setup() {
+                const currentView = ref('home');
+                const isModalOpen = ref(false);
+                const selectedItem = ref(null);
+                const modalView = ref(null);
+
+                const openModal = (data) => {
+                    selectedItem.value = data;
+                    isModalOpen.value = true;
+                    modalView.value = ModalComponent;
+                };
+
+                const closeModal = () => {
+                    isModalOpen.value = false;
+                    selectedItem.value = null;
+                    modalView.value = null;
+                };
+
+                return { currentView, isModalOpen, selectedItem, modalView, openModal, closeModal };
+            },
+            components: {
+                Home,
+                Films: createCardListComponent('Filmes', 'films', 'Invocando a Força...'),
+                People: createCardListComponent('Personagens', 'people', 'Contatando a Aliança...'),
+                Planets: createCardListComponent('Planetas', 'planets', 'Mapeando a galáxia...'),
+                Species: createCardListComponent('Espécies', 'species', 'Consultando arquivos Jedi...'),
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
